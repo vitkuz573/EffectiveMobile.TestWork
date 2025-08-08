@@ -1,0 +1,17 @@
+### Загрузка рекламных площадок по пути к файлу
+POST http://localhost:5044/api/AdvertisingSpaces/upload
+Content-Type: application/json
+
+"C:\\ad.txt"
+
+###
+
+### Получение рекламных площадок по локации (пример: /ru/svrd)
+GET http://localhost:5044/api/AdvertisingSpaces?location=/ru/svrd
+Accept: application/json
+
+###
+
+### Получение рекламных площадок по локации (пример: /ru/msk)
+GET http://localhost:5044/api/AdvertisingSpaces?location=/ru/msk
+Accept: application/json

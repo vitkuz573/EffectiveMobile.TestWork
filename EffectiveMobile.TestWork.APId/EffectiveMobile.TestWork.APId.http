@@ -1,6 +1,0 @@
-@EffectiveMobile.TestWork.APId_HostAddress = http://localhost:5049
-
-GET {{EffectiveMobile.TestWork.APId_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
