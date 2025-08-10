@@ -3,71 +3,25 @@ using EffectiveMobile.TestWork.API.Models;
 
 namespace EffectiveMobile.TestWork.API.Services;
 
-public class DataService(ILogger<DataService> logger) : IDataService
+public class DataService(IDataParser dataParser, ILogger<DataService> logger) : IDataService
 {
     private readonly List<AdvertisingSpace> _advertisingSpaces = [];
 
     public async Task<bool> LoadAdvertisingSpacesAsync(string filePath)
     {
-        string[] lines;
+        var parseResult = await dataParser.ParseAsync(filePath);
 
-        try
+        if (parseResult is null || !parseResult.Any())
         {
-            lines = await File.ReadAllLinesAsync(filePath);
-        }
-        catch (Exception ex)
-        {
-            logger.LogInformation("Error reading file: {FilePath}. Exception: {ExceptionMessage}", filePath, ex.Message);
-
+            logger.LogWarning("Failed to load advertising spaces from {FilePath}. Parser returned no items.", filePath);
+            
             return false;
         }
 
         _advertisingSpaces.Clear();
+        _advertisingSpaces.AddRange(parseResult);
 
-        foreach (var line in lines)
-        {
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            var parts = line.Split(':', 2);
-
-            if (parts.Length < 2)
-            {
-                logger.LogWarning("Invalid line format (missing ':'): {Line}", line);
-                
-                continue;
-            }
-
-            var advertisingSpaceName = parts[0].Trim();
-
-            if (string.IsNullOrWhiteSpace(advertisingSpaceName))
-            {
-                logger.LogWarning("Empty advertising space name in line: {Line}", line);
-                
-                continue;
-            }
-
-            List<string> advertisingSpaceLocations;
-
-            try
-            {
-                advertisingSpaceLocations = [.. parts[1]
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(l => l.Trim())];
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Error while parsing locations in line: {Line}. Exception: {ExceptionMessage}", line, ex.Message);
-                
-                advertisingSpaceLocations = [];
-            }
-
-            var advertisingSpace = new AdvertisingSpace(advertisingSpaceName, advertisingSpaceLocations);
-            
-            _advertisingSpaces.Add(advertisingSpace);
-        }
+        logger.LogInformation("Loaded {Count} advertising spaces from {FilePath}.", _advertisingSpaces.Count, filePath);
 
         return true;
     }

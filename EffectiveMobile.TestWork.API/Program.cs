@@ -1,5 +1,6 @@
 using EffectiveMobile.TestWork.API.Abstractions;
 using EffectiveMobile.TestWork.API.Services;
+using System.IO.Abstractions;
 
 namespace EffectiveMobile.TestWork.API;
 
@@ -10,6 +11,8 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
+        builder.Services.AddSingleton<IFileSystem, FileSystem>();
+        builder.Services.AddSingleton<IDataParser, CustomFormatDataParser>();
         builder.Services.AddSingleton<IDataService, DataService>();
 
         builder.Services.AddControllers();
