@@ -1,12 +1,9 @@
 ﻿using EffectiveMobile.TestWork.API.Abstractions;
-using EffectiveMobile.TestWork.API.Models;
 
 namespace EffectiveMobile.TestWork.API.Services;
 
-public class DataService(IDataParser dataParser, ILogger<DataService> logger) : IDataService
+public class DataService(IDataStorage dataStorage, IDataParser dataParser, ILogger<DataService> logger) : IDataService
 {
-    private readonly List<AdvertisingSpace> _advertisingSpaces = [];
-
     public async Task<bool> LoadAdvertisingSpacesAsync(string filePath)
     {
         var parseResult = await dataParser.ParseAsync(filePath);
@@ -18,33 +15,18 @@ public class DataService(IDataParser dataParser, ILogger<DataService> logger) : 
             return false;
         }
 
-        _advertisingSpaces.Clear();
-        _advertisingSpaces.AddRange(parseResult);
+        dataStorage.Clear();
+        dataStorage.AddRange(parseResult);
 
-        logger.LogInformation("Loaded {Count} advertising spaces from {FilePath}.", _advertisingSpaces.Count, filePath);
+        logger.LogInformation("Loaded {Count} advertising spaces from {FilePath}.", parseResult.Count(), filePath);
 
         return true;
     }
 
     public IEnumerable<string> GetAdvertisingSpaceNames(string location)
     {
-        if (string.IsNullOrWhiteSpace(location))
-        {
-            logger.LogInformation("Location is null or empty.");
+        var result = dataStorage.Get(location);
 
-            return [];
-        }
-
-        var result = _advertisingSpaces
-            .Where(@as => @as.Locations.Any(l => location.StartsWith(l, StringComparison.OrdinalIgnoreCase)))
-            .Select(@as => @as.Name)
-            .ToList();
-
-        if (result.Count == 0)
-        {
-            logger.LogInformation("No advertising spaces found for location: {Location}", location);
-        }
-
-        return result;
+        return result.Select(@as => @as.Name);
     }
 }

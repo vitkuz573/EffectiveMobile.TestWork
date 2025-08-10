@@ -12,6 +12,7 @@ public class Program
 
         // Add services to the container.
         builder.Services.AddSingleton<IFileSystem, FileSystem>();
+        builder.Services.AddSingleton<IDataStorage, InMemoryDataStorage>();
         builder.Services.AddSingleton<IDataParser, CustomFormatDataParser>();
         builder.Services.AddSingleton<IDataService, DataService>();
 
